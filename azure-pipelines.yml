@@ -1,47 +1,37 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-trigger:
-- main
-
 pool:
-  vmImage: 'windows-latest'
+  name: default
+stages:
 
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+- stage: DEV
+  lockBehavior: sequential
+  jobs:
+  - deployment: 'DeployToQA'
+    environment: 'fares'
+    strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: AzureWebApp@1
+                inputs:
+                  azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
+                  appType: 'webApp'
+                  appName: 'migration-web-app'
+                  package: '$(System.DefaultWorkingDirectory)/*.zip'
+                  deploymentMethod: 'auto'
 
-steps:
-- task: NuGetToolInstaller@1
+- stage: DB
+  jobs:
+  - job: Deploy
+    steps:
+    - task: SqlAzureDacpacDeployment@1
+      inputs:
+        azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
+        AuthenticationType: 'connectionString'
+        ConnectionString: 'Server=tcp:migration-sql-db.database.windows.net,1433;Initial Catalog=tourdb;Persist Security Info=False;User ID=Dalyne1999;Password=Backtrack5r3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        deployType: 'DacpacTask'
+        DeploymentAction: 'Import'
+        BacpacFile: 'tourdb-2023-5-19-13-38.dacpac'
+        IpDetectionMethod: 'AutoDetect'
 
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'Valorem(1)(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
-    appType: 'webApp'
-    appName: 'migration-web-app'
-    package: '$(System.DefaultWorkingDirectory)\**\Website.zip'
-    deploymentMethod: 'auto'
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-    
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
-    artifactName: 'myWebsiteName' 
