@@ -32,11 +32,4 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'Valorem(2)(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
-    appType: 'webApp'
-    appName: 'migration-web-app'
-    package: '$(System.DefaultWorkingDirectory)/*.zip'
-    deploymentMethod: 'auto'
 - task: PublishBuildArtifacts@1    
