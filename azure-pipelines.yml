@@ -4,8 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 
-pool:
-  vmImage: 'default'
+pool: 'default'
 
 variables:
   solution: 'DotNetFrameworkProject_CE040_CE087/*.sln'
