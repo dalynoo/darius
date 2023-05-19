@@ -1,3 +1,5 @@
+variables:
+  isMain: fares
 pool:
   name: default
 stages:
@@ -11,6 +13,7 @@ stages:
         runOnce:
           deploy:
             steps:
+              - task: PublishBuildArtifacts@1
               - task: AzureWebApp@1
                 inputs:
                   azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
