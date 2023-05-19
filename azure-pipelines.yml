@@ -3,19 +3,7 @@ variables:
 pool:
   name: default
 stages:
-- stage: DB
-  jobs:
-  - job: Deploy
-    steps:
-    - task: SqlAzureDacpacDeployment@1
-      inputs:
-        azureSubscription: 'Valorem(2)(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
-        AuthenticationType: 'connectionString'
-        ConnectionString: 'Server=tcp:migration-sql-db.database.windows.net,1433;Initial Catalog=tourdb;Persist Security Info=False;User ID=Dalyne1999;Password=Backtrack5r3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
-        deployType: 'DacpacTask'
-        DeploymentAction: 'Import'
-        BacpacFile: 'tourdb-2023-5-19-13-38.dacpac'
-        IpDetectionMethod: 'AutoDetect'
+
 - stage: DEV
   lockBehavior: sequential
   jobs:
@@ -45,5 +33,20 @@ stages:
                   appName: 'pipeline-test-webapp'
                   package: '$(System.DefaultWorkingDirectory)/*.zip'
                   deploymentMethod: 'auto'
+
+- stage: DB
+  jobs:
+  - job: Deploy
+    steps:
+    - task: SqlAzureDacpacDeployment@1
+      inputs:
+        azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
+        AuthenticationType: 'connectionString'
+        ConnectionString: 'Server=tcp:migration-sql-db.database.windows.net,1433;Initial Catalog=tourdb;Persist Security Info=False;User ID=Dalyne1999;Password=Backtrack5r3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        deployType: 'DacpacTask'
+        DeploymentAction: 'Import'
+        BacpacFile: 'tourdb-2023-5-19-13-38.dacpac'
+        IpDetectionMethod: 'AutoDetect'
+
 
 
