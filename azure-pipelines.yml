@@ -1,37 +1,58 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-
-pool: Default
-
 variables:
-  solution: 'DotNetFrameworkProject_CE040_CE087/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  isMain: fares
+pool:
+  name: default
+stages:
+- stage: DEV
+  jobs:
+  - job: Deploy
+    steps:
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write your PowerShell commands here.
+            dotnet publish
+            $compress = @{
+              Path = "$(System.DefaultWorkingDirectory)/bin/Debug/net7.0/publish/*"
+              CompressionLevel = "Fastest"
+              DestinationPath = "$(System.DefaultWorkingDirectory)/$(deployzip).zip"
+            }
+            Compress-Archive @compress
+      - task: AzureWebApp@1
+        inputs:
+          azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
+          appType: 'webApp'
+          appName: 'api-finance-project'
+          package: '$(System.DefaultWorkingDirectory)/$(deployzip).zip'
+          deploymentMethod: 'auto'
+- stage: QA
+  lockBehavior: sequential
+  jobs:
+  - deployment: 'DeployToQA'
+    environment: 'fares'
+    strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: PowerShell@2
+                inputs:
+                  targetType: 'inline'
+                  script: |
+                    # Write your PowerShell commands here.
+                    dotnet publish
+                    $compress = @{
+                    Path = "$(System.DefaultWorkingDirectory)/bin/Debug/net7.0/publish/*"
+                    CompressionLevel = "Fastest"
+                    DestinationPath = "$(System.DefaultWorkingDirectory)/$(deployzip).zip"
+                    }
+                    Compress-Archive -Force @compress
+              - task: AzureWebApp@1
+                inputs:
+                  azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
+                  appType: 'webApp'
+                  appName: 'pipeline-test-webapp'
+                  package: '$(System.DefaultWorkingDirectory)/*.zip'
+                  deploymentMethod: 'auto'
 
-steps:
-- task: NuGetToolInstaller@1
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
-
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: CmdLine@2
-  inputs:
-    script: |
-      echo Write your commands here
-      
-      echo Hello world
-      
-      ls
-            
-      pwd
