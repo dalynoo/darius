@@ -5,7 +5,7 @@
 
 
 pool:
-  vmImage: 'Default'
+  vmImage: 'default'
 
 variables:
   solution: 'DotNetFrameworkProject_CE040_CE087/*.sln'
