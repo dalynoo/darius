@@ -1,5 +1,3 @@
-variables:
-  isMain: fares
 pool:
   name: default
 stages:
