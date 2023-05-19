@@ -13,24 +13,11 @@ stages:
         runOnce:
           deploy:
             steps:
-              - task: DotNetCoreCLI@2
-                inputs:
-                  command: 'build'
-                  projects: '$(System.DefaultWorkingDirectory)/DotNetFrameworkProject_CE040_CE087/Tour_Management.sln'
-              - task: CmdLine@2
-                inputs:
-                  script: |
-                    echo Write your commands here
-                    cd DotNetFrameworkProject_CE040_CE087
-                    cd Tour_Management
-                    ls -a
-                    pwd
-                    echo Hello world/
               - task: AzureWebApp@1
                 inputs:
                   azureSubscription: 'Valorem(04c7f982-87f9-4fa5-8da8-7a1f76e7b15d)'
                   appType: 'webApp'
-                  appName: 'pipeline-test-webapp'
+                  appName: 'migration-web-app'
                   package: '$(System.DefaultWorkingDirectory)/*.zip'
                   deploymentMethod: 'auto'
 
